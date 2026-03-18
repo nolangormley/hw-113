@@ -1,37 +1,3 @@
-"""
-Sokoban — A graphical puzzle game built with pygame.
-
-HOW TO PLAY:
-    Push all boxes onto goal squares to win.
-    Move with arrow keys or WASD.
-
-ARCHITECTURE:
-    - SokobanGame class holds all game state and logic.
-    - The grid is a 2D list of single-character strings.
-    - The player's position is tracked separately from the grid;
-      the grid stores what is "underneath" the player (floor or goal).
-    - Rendering uses pygame — each cell is drawn as a colored square.
-
-COLLABORATION:
-    This file contains a working foundation with five features left
-    unimplemented as stub methods.  Search for "TODO(peer)" to find
-    all five stubs that need to be completed:
-
-        1. push_box()             — box pushing logic
-        2. check_win()            — win condition detection
-        3. undo()                 — undo last move
-        4. increment_move_count() — move counter
-        5. reset_level()          — restart the current level
-
-    Each stub has a detailed docstring explaining what to implement
-    and hints on how to do it.
-
-CELL TYPES:
-    #   wall              .   goal            (space)   floor
-    @   player            +   player on goal
-    $   box               *   box on goal
-"""
-
 import copy
 import sys
 
@@ -82,6 +48,14 @@ COLOR_TILE_BORDER = (  0,   0,   0)  # black border between tiles
 # Level data — each level is a list of strings, one string per row.
 # Rows may differ in length; shorter rows are padded during parsing.
 # ---------------------------------------------------------------------------
+
+# Testing level
+# LEVEL_1 = [
+#     "#####",
+#     "#@$.#",
+#     "#####",
+# ]
+
 LEVEL_1 = [
     "  #####",
     "###   #",
@@ -124,8 +98,8 @@ class SokobanGame:
         self.grid, self.player_row, self.player_col = self._parse_level(
             level_lines
         )
-        self.move_count = 0   # TODO(peer): used by increment_move_count()
-        self.history = []     # TODO(peer): used by undo(); stores snapshots
+        self.move_count = 0
+        self.history = []
 
         # These are set by run() once pygame is initialized
         self.screen = None
@@ -302,16 +276,12 @@ class SokobanGame:
                 return  # push failed — player stays put
 
         # --- The move is valid if we reach this point ---
-
-        # TODO(peer): Before updating the player position below, save a
-        # snapshot of the current state to self.history so that undo()
-        # can restore it.  The snapshot should look like:
-        #     self.history.append((
-        #         copy.deepcopy(self.grid),
-        #         self.player_row,
-        #         self.player_col,
-        #         self.move_count,
-        #     ))
+        self.history.append((
+            copy.deepcopy(self.grid),
+            self.player_row,
+            self.player_col,
+            self.move_count,
+        ))
 
         self.player_row = new_r
         self.player_col = new_c
@@ -419,24 +389,6 @@ class SokobanGame:
     # ==================================================================
 
     def push_box(self, box_r, box_c, dr, dc):
-        if self._get_cell(box_r + dr, box_c + dc) not in (FLOOR, GOAL):
-            return False
-
-        if self._get_cell(box_r, box_c) == BOX:
-            self.grid[box_r][box_c] = FLOOR
-        elif self._get_cell(box_r, box_c) == BOX_ON_GOAL:
-            self.grid[box_r][box_c] = GOAL
-
-        if self._get_cell(box_r + dr, box_c + dc) == FLOOR:
-            self.grid[box_r + dr][box_c + dc] = BOX
-        elif self._get_cell(box_r + dr, box_c + dc) == GOAL:
-            self.grid[box_r + dr][box_c + dc] = BOX_ON_GOAL
-
-        return True
-
-
-
-        
         """Push the box at (box_r, box_c) one step in direction (dr, dc).
 
         A box can only be pushed if the cell behind it — that is, the cell
@@ -464,16 +416,20 @@ class SokobanGame:
         Returns:
             True if the box was successfully pushed, False otherwise.
         """
-        # TODO(peer): Implement box pushing logic.
-        #
-        # Hints:
-        #   - Use self._get_cell(box_r + dr, box_c + dc) to check what
-        #     is behind the box.
-        #   - If the destination contains WALL, BOX, or BOX_ON_GOAL,
-        #     the push fails — return False.
-        #   - Remember to update self.grid for both the box's old cell
-        #     and its new cell.
-        return False  # stub: boxes always block the player
+        if self._get_cell(box_r + dr, box_c + dc) not in (FLOOR, GOAL):
+            return False
+
+        if self._get_cell(box_r, box_c) == BOX:
+            self.grid[box_r][box_c] = FLOOR
+        elif self._get_cell(box_r, box_c) == BOX_ON_GOAL:
+            self.grid[box_r][box_c] = GOAL
+
+        if self._get_cell(box_r + dr, box_c + dc) == FLOOR:
+            self.grid[box_r + dr][box_c + dc] = BOX
+        elif self._get_cell(box_r + dr, box_c + dc) == GOAL:
+            self.grid[box_r + dr][box_c + dc] = BOX_ON_GOAL
+
+        return True
 
     def check_win(self):
         """Check whether all goals on the board are covered by boxes.
@@ -489,12 +445,11 @@ class SokobanGame:
         Returns:
             True if the puzzle is solved, False otherwise.
         """
-        # TODO(peer): Implement win detection.
-        #
-        # Hint: iterate over every cell in self.grid.  If any cell
-        # equals GOAL, the puzzle is not yet solved — return False.
-        # If you reach the end without finding any GOAL, return True.
-        return False  # stub: game never ends
+        for row in self.grid:
+            for cell in row:
+                if cell == GOAL:
+                    return False
+        return True
 
     def undo(self):
         """Undo the last move by restoring the previous state.
@@ -514,20 +469,12 @@ class SokobanGame:
         copy.deepcopy(self.grid) when saving the grid to avoid
         aliasing issues.  The copy module is already imported.
         """
-        # TODO(peer): Implement undo.
-        #
-        # Hint — add this in move() where indicated:
-        #     self.history.append((
-        #         copy.deepcopy(self.grid),
-        #         self.player_row,
-        #         self.player_col,
-        #         self.move_count,
-        #     ))
-        #
-        # Then here, pop and restore:
-        #     snapshot = self.history.pop()
-        #     self.grid, self.player_row, self.player_col, self.move_count = snapshot
-        print("Undo is not yet implemented.")
+        if not self.history:
+            print("No moves to undo.")
+            return
+
+        snapshot = self.history.pop()
+        self.grid, self.player_row, self.player_col, self.move_count = snapshot
 
     def increment_move_count(self):
         """Increment the move counter by 1.
@@ -537,10 +484,7 @@ class SokobanGame:
 
         This is the simplest of the five stubs — just one line!
         """
-        # TODO(peer): Implement move counter.
-        #
-        # Hint: self.move_count += 1
-        pass  # stub: counter stays at 0
+        self.move_count += 1
 
     def reset_level(self):
         """Reset the current level to its initial state.
@@ -548,16 +492,11 @@ class SokobanGame:
         Restores the grid, player position, move count, and history
         to their original values by re-parsing self.initial_level.
         """
-        # TODO(peer): Implement level reset.
-        #
-        # Hint: you can re-use self._parse_level() to rebuild the grid
-        # and find the player position:
-        #     self.grid, self.player_row, self.player_col = (
-        #         self._parse_level(self.initial_level)
-        #     )
-        #     self.move_count = 0
-        #     self.history = []
-        print("Reset is not yet implemented.")
+        self.grid, self.player_row, self.player_col = (
+            self._parse_level(self.initial_level)
+        )
+        self.move_count = 0
+        self.history = []
 
 
 # ---------------------------------------------------------------------------
