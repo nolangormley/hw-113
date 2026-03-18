@@ -270,6 +270,9 @@ class SokobanGame:
         if target == WALL:
             return
 
+        # Preserve the grid state before attempting to push any boxes
+        pre_move_grid = copy.deepcopy(self.grid)
+
         # If a box is in the way, try to push it
         if target in (BOX, BOX_ON_GOAL):
             if not self.push_box(new_r, new_c, dr, dc):
@@ -277,7 +280,7 @@ class SokobanGame:
 
         # --- The move is valid if we reach this point ---
         self.history.append((
-            copy.deepcopy(self.grid),
+            pre_move_grid,
             self.player_row,
             self.player_col,
             self.move_count,
