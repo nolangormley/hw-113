@@ -1,0 +1,5 @@
+-can you move the comment block from the top of sokoban.py into the readme
+-implement the reset function when I press 'R'
+-implement any TODOs mentioned in the main file
+-can you generate a LEVEL_0 that is a super simple level for testing purpoes? it should be commented out by default
+-currently, the undo function moves the user back, but does not move a tile that the user moved. Could you add a history for each tile and refactor the undo function so that it will go to the previous tile state as well
